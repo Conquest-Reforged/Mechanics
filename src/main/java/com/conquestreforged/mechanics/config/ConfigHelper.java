@@ -23,7 +23,7 @@ public class ConfigHelper {
 
         Config config = new Config();
         if (generate) {
-            for (Module module : Module.REGISTRY) {
+            for (Module module : Module.REGISTRY.values()) {
                 module.addConfigDefaults(config);
             }
             save(config, file);

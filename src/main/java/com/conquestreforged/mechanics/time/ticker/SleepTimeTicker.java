@@ -25,6 +25,7 @@ public class SleepTimeTicker implements TimeTicker {
         }
 
         float modifier = sleeping / world.getPlayers().size();
+
         return 1F + (modifier * increment);
     }
 }

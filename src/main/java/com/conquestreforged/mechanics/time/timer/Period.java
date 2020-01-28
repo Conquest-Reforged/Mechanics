@@ -1,4 +1,4 @@
-package com.conquestreforged.mechanics.time;
+package com.conquestreforged.mechanics.time.timer;
 
 public enum Period {
     MORNING(23501, 6000),

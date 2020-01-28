@@ -3,22 +3,42 @@ package com.conquestreforged.mechanics.time;
 import com.conquestreforged.mechanics.Module;
 import com.conquestreforged.mechanics.config.Config;
 import com.conquestreforged.mechanics.time.ticker.SleepTimeTicker;
-import net.minecraft.entity.player.PlayerEntity;
-import net.minecraft.server.MinecraftServer;
+import com.conquestreforged.mechanics.time.timer.Period;
+import com.conquestreforged.mechanics.time.timer.TimeMessage;
+import com.conquestreforged.mechanics.time.timer.WorldTimer;
+import com.conquestreforged.mechanics.time.timer.WorldTimerServer;
+import net.minecraft.world.IWorld;
 import net.minecraft.world.dimension.DimensionType;
-import net.minecraft.world.server.ServerWorld;
-import net.minecraftforge.event.TickEvent;
-import net.minecraftforge.event.entity.player.PlayerSleepInBedEvent;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.LogicalSide;
+import net.minecraftforge.fml.network.NetworkEvent;
 
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Function;
+import java.util.function.Supplier;
 
 public class TimeModule implements Module {
 
+    public static final TimeModule INSTANCE = new TimeModule(WorldTimer::new);
+
+    private final Function<DimensionType, WorldTimer> constructor;
     private final Map<DimensionType, WorldTimer> timers = new ConcurrentHashMap<>();
+
+    public TimeModule(Function<DimensionType, WorldTimer> constructor) {
+        this.constructor = constructor;
+    }
+
+    public boolean has(DimensionType dimensionType) {
+        return timers.containsKey(dimensionType);
+    }
+
+    public void tick(IWorld world) {
+        WorldTimer timer = timers.get(world.getDimension().getType());
+        if (timer == null) {
+            return;
+        }
+        timer.tick(world);
+    }
 
     @Override
     public boolean isEnabled(Config config) {
@@ -31,37 +51,29 @@ public class TimeModule implements Module {
     }
 
     @Override
-    public void onLoad(MinecraftServer server, Config config) {
+    public void init() {
         timers.clear();
-        for (ServerWorld world : server.getWorlds()) {
-            DimensionType dimension = world.getDimension().getType();
-            Optional<Number> multiplier = config.time.get(dimension.getRegistryName() + "", Number.class);
+    }
+
+    @Override
+    public void onLoad(Config config) {
+        for (DimensionType dimension : DimensionType.getAll()) {
+            Optional<Double> multiplier = config.time.get(dimension.getRegistryName() + "", Double.class);
             if (multiplier.isPresent()) {
-                WorldTimer timer = new WorldTimer().add(Period.NIGHT, new SleepTimeTicker(multiplier.get().floatValue()));
+                WorldTimerServer timer = new WorldTimerServer(dimension);
+                timer.add(Period.NIGHT, new SleepTimeTicker(multiplier.get().floatValue()));
                 timers.put(dimension, timer);
+                System.out.println("#" + dimension);
             }
         }
     }
 
-    @SubscribeEvent
-    public void onSleep(PlayerSleepInBedEvent event) {
-        if (timers.containsKey(event.getEntity().world.getDimension().getType())) {
-            // bypasses the server.updateAllPlayersSleepingFlag() call
-            event.setResult(PlayerEntity.SleepResult.OTHER_PROBLEM);
-
-            // put the player in the bed
-            event.getEntityLiving().startSleeping(event.getPos());
-        }
-    }
-
-    @SubscribeEvent
-    public void onTick(TickEvent.WorldTickEvent event) {
-        if (event.side == LogicalSide.SERVER && event.phase == TickEvent.Phase.START) {
-            WorldTimer timer = timers.get(event.world.getDimension().getType());
-            if (timer == null) {
-                return;
-            }
-            timer.tick(event.world);
+    protected void handleMessage(TimeMessage message, Supplier<NetworkEvent.Context> context) {
+        if (context.get().getDirection().getReceptionSide().isClient()) {
+            DimensionType type = DimensionType.getById(message.getDimension());
+            WorldTimer timer = timers.computeIfAbsent(type, constructor);
+            timer.setRate(message.getRate());
+            context.get().setPacketHandled(true);
         }
     }
 }

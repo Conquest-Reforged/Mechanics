@@ -1,18 +1,19 @@
 package com.conquestreforged.mechanics;
 
 import com.conquestreforged.mechanics.config.Config;
-import net.minecraft.server.MinecraftServer;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 
 public interface Module {
 
-    List<Module> REGISTRY = new ArrayList<>();
+    Map<String, Module> REGISTRY = new HashMap<>();
+
+    void init();
+
+    void onLoad(Config config);
 
     boolean isEnabled(Config config);
 
     void addConfigDefaults(Config config);
-
-    void onLoad(MinecraftServer server, Config config);
 }
