@@ -1,0 +1,70 @@
+buildscript {
+    repositories {
+        jcenter()
+        mavenCentral()
+        maven { url "https://files.minecraftforge.net/maven" }
+    }
+    dependencies {
+        classpath group: "net.minecraftforge.gradle", name: "ForgeGradle", version: "3.+", changing: true
+    }
+}
+
+apply plugin: "net.minecraftforge.gradle"
+apply plugin: "eclipse"
+
+version = "${version}-mc${mc_version}"
+
+repositories {
+    jcenter()
+    mavenCentral()
+}
+
+dependencies {
+    minecraft "net.minecraftforge:forge:${mc_version}-${forge_version}"
+}
+
+minecraft {
+    mappings channel: mcp_channel, version: mcp_version
+    runs {
+        client {
+            workingDirectory project.file("run/client")
+            property "forge.logging.markers", "SCAN,REGISTRIES,REGISTRYDUMP"
+            property "forge.logging.console.level", "debug"
+            jvmArgs "-Xmx8G", "-Xms6G"
+            mods {
+                examplemod {
+                    source sourceSets.main
+                }
+            }
+        }
+        server {
+            workingDirectory project.file("run/server")
+            property "forge.logging.markers", "SCAN,REGISTRIES,REGISTRYDUMP"
+            property "forge.logging.console.level", "debug"
+            jvmArgs "-Xmx8G", "-Xms6G"
+            mods {
+                examplemod {
+                    source sourceSets.main
+                }
+            }
+        }
+    }
+}
+
+processResources {
+    filesMatching("**/mods.toml") {
+        expand(
+                "version": mod_version,
+                "mc_version": mc_version
+        )
+    }
+}
+
+task deobfJar(type: Jar) {
+    from sourceSets.main.output
+    classifier = "deobf"
+}
+
+jar {
+    dependsOn(deobfJar)
+}

@@ -1,0 +1,7 @@
+modLoader="javafml"
+loaderVersion="[31,)"
+[[mods]]
+    modId="mechanics"
+    displayName="Mechanics"
+    version="${version}"
+    authors="dags"
