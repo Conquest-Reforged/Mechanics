@@ -11,9 +11,9 @@ public interface Module {
 
     void init();
 
-    void onLoad(Config config);
+    void load(Config config);
+
+    void addDefaults(Config config);
 
     boolean isEnabled(Config config);
-
-    void addConfigDefaults(Config config);
 }

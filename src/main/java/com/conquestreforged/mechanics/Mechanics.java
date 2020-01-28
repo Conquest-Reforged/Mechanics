@@ -22,9 +22,9 @@ public class Mechanics {
     private static void load(FMLServerStartedEvent event) {
         Config config = ConfigHelper.load(new File("config/mechanics.json"));
         for (Module module : Module.REGISTRY.values()) {
+            module.init();
             if (module.isEnabled(config)) {
-                module.init();
-                module.onLoad(config);
+                module.load(config);
             }
         }
     }

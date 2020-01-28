@@ -46,7 +46,7 @@ public class TimeModule implements Module {
     }
 
     @Override
-    public void addConfigDefaults(Config config) {
+    public void addDefaults(Config config) {
         config.time.put(DimensionType.OVERWORLD.getRegistryName() + "", 4F);
     }
 
@@ -56,7 +56,7 @@ public class TimeModule implements Module {
     }
 
     @Override
-    public void onLoad(Config config) {
+    public void load(Config config) {
         for (DimensionType dimension : DimensionType.getAll()) {
             Optional<Double> multiplier = config.time.get(dimension.getRegistryName() + "", Double.class);
             if (multiplier.isPresent()) {

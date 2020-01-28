@@ -24,7 +24,7 @@ public class ConfigHelper {
         Config config = new Config();
         if (generate) {
             for (Module module : Module.REGISTRY.values()) {
-                module.addConfigDefaults(config);
+                module.addDefaults(config);
             }
             save(config, file);
         }
