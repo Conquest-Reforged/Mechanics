@@ -1,6 +1,8 @@
 package com.conquestreforged.mechanics.time;
 
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.screen.Screen;
+import net.minecraft.client.gui.screen.SleepInMultiplayerScreen;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.event.TickEvent;
@@ -18,13 +20,20 @@ public class TimeClient {
 
     @SubscribeEvent
     public static void tick(TickEvent.ClientTickEvent event) {
+        if (event.phase != TickEvent.Phase.START) {
+            return;
+        }
+
+        Screen screen = Minecraft.getInstance().currentScreen;
+        if (screen != null && !(screen instanceof SleepInMultiplayerScreen)) {
+            return;
+        }
+
         PlayerEntity player = Minecraft.getInstance().player;
         if (player == null) {
             return;
         }
 
-        if (event.phase == TickEvent.Phase.START) {
-            TimeModule.INSTANCE.tick(player.world);
-        }
+        TimeModule.INSTANCE.tick(player.world);
     }
 }
