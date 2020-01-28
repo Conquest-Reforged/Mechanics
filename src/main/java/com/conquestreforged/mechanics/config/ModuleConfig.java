@@ -3,15 +3,29 @@ package com.conquestreforged.mechanics.config;
 public class ModuleConfig extends ObjectMap {
 
     public ModuleConfig() {
-        set("enabled", true);
+        put("enabled", true);
+    }
+
+    @Override
+    public Object put(String key, Object value) {
+        if (key.equals("enabled")) {
+            super.put(key, value);
+            return null;
+        }
+        return super.put(key, value);
     }
 
     public boolean isEnabled() {
-        Object value = get("enabled");
-        if (value == null) {
+        Object enabled = get("enabled");
+        if (enabled == null) {
             put("enabled", true);
             return true;
         }
-        return value == Boolean.TRUE;
+
+        if (enabled instanceof Boolean) {
+            return enabled.equals(Boolean.TRUE);
+        }
+
+        return (boolean) enabled;
     }
 }

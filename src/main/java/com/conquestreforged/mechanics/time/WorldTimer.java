@@ -53,7 +53,7 @@ public class WorldTimer {
 
     private float getPartialTime(long ticks) {
         // if the delta is greater than one then someone else has changed the time
-        if (ticks - getTime() > 1) {
+        if (Math.abs(ticks - getTime()) > 1) {
             time = ticks;
         }
         return time;

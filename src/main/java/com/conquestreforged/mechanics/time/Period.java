@@ -1,9 +1,9 @@
 package com.conquestreforged.mechanics.time;
 
 public enum Period {
-    MORNING(23001, 6000),
+    MORNING(23501, 6000),
     AFTERNOON(6001, 13000),
-    NIGHT(13001, 23000),
+    NIGHT(13001, 23500),
     ;
 
     private final long from;
@@ -20,14 +20,6 @@ public enum Period {
         } else {
             return ticks >= from && ticks <= to;
         }
-    }
-
-    public long getFrom() {
-        return from;
-    }
-
-    public long getTo() {
-        return to;
     }
 
     public static Period getPeriod(long ticks) {

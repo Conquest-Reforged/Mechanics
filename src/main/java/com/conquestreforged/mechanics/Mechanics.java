@@ -7,18 +7,23 @@ import net.minecraft.server.MinecraftServer;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.event.server.FMLServerAboutToStartEvent;
+import net.minecraftforge.fml.event.lifecycle.FMLCommonSetupEvent;
+import net.minecraftforge.fml.event.server.FMLServerStartedEvent;
 
 import java.io.File;
 
 @Mod("mechanics")
-@Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.FORGE)
+@Mod.EventBusSubscriber(bus = Mod.EventBusSubscriber.Bus.MOD)
 public class Mechanics {
 
     @SubscribeEvent
-    public static void init(FMLServerAboutToStartEvent event) {
+    public static void init(FMLCommonSetupEvent event) {
         Module.REGISTRY.add(new TimeModule());
 
+        MinecraftForge.EVENT_BUS.addListener(Mechanics::start);
+    }
+
+    public static void start(FMLServerStartedEvent event) {
         reload(event.getServer());
     }
 

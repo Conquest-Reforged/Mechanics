@@ -35,9 +35,9 @@ public class TimeModule implements Module {
         timers.clear();
         for (ServerWorld world : server.getWorlds()) {
             DimensionType dimension = world.getDimension().getType();
-            Optional<Float> multiplier = config.time.get(dimension.getRegistryName() + "", Float.class);
+            Optional<Number> multiplier = config.time.get(dimension.getRegistryName() + "", Number.class);
             if (multiplier.isPresent()) {
-                WorldTimer timer = new WorldTimer().add(Period.NIGHT, new SleepTimeTicker(multiplier.get()));
+                WorldTimer timer = new WorldTimer().add(Period.NIGHT, new SleepTimeTicker(multiplier.get().floatValue()));
                 timers.put(dimension, timer);
             }
         }
