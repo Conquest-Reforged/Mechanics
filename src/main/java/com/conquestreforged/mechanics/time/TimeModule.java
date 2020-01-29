@@ -1,43 +1,45 @@
 package com.conquestreforged.mechanics.time;
 
 import com.conquestreforged.mechanics.Module;
-import com.conquestreforged.mechanics.config.Config;
 import com.conquestreforged.mechanics.time.ticker.SleepTimeTicker;
-import com.conquestreforged.mechanics.time.timer.Period;
-import com.conquestreforged.mechanics.time.timer.TimeMessage;
+import com.conquestreforged.mechanics.time.timer.ServerWorldTimer;
 import com.conquestreforged.mechanics.time.timer.WorldTimer;
-import com.conquestreforged.mechanics.time.timer.WorldTimerServer;
-import net.minecraft.world.IWorld;
+import com.conquestreforged.mechanics.util.Channels;
+import com.conquestreforged.mechanics.util.config.Config;
+import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.world.dimension.DimensionType;
-import net.minecraftforge.fml.network.NetworkEvent;
+import net.minecraftforge.event.TickEvent;
+import net.minecraftforge.event.entity.player.PlayerEvent;
+import net.minecraftforge.event.entity.player.PlayerSleepInBedEvent;
+import net.minecraftforge.eventbus.api.SubscribeEvent;
+import org.apache.logging.log4j.Marker;
+import org.apache.logging.log4j.MarkerManager;
 
 import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.function.Function;
-import java.util.function.Supplier;
 
 public class TimeModule implements Module {
 
-    public static final TimeModule INSTANCE = new TimeModule(WorldTimer::new);
+    private static final Marker MARKER = MarkerManager.getMarker("Time").addParents(Module.MARKER);
 
-    private final Function<DimensionType, WorldTimer> constructor;
+    // ConcurrentMap as server implementations may tick worlds asynchronously
     private final Map<DimensionType, WorldTimer> timers = new ConcurrentHashMap<>();
 
-    public TimeModule(Function<DimensionType, WorldTimer> constructor) {
-        this.constructor = constructor;
+    @Override
+    public Marker getMarker() {
+        return MARKER;
     }
 
-    public boolean has(DimensionType dimensionType) {
-        return timers.containsKey(dimensionType);
+    @Override
+    public String getName() {
+        return "time";
     }
 
-    public void tick(IWorld world) {
-        WorldTimer timer = timers.get(world.getDimension().getType());
-        if (timer == null) {
-            return;
-        }
-        timer.tick(world);
+    @Override
+    public void unload() {
+        timers.clear();
     }
 
     @Override
@@ -47,33 +49,62 @@ public class TimeModule implements Module {
 
     @Override
     public void addDefaults(Config config) {
+        info("Adding config defaults");
         config.time.put(DimensionType.OVERWORLD.getRegistryName() + "", 4F);
     }
 
     @Override
-    public void init() {
-        timers.clear();
-    }
-
-    @Override
     public void load(Config config) {
+        info("Loading from config");
+        timers.clear();
         for (DimensionType dimension : DimensionType.getAll()) {
             Optional<Double> multiplier = config.time.get(dimension.getRegistryName() + "", Double.class);
             if (multiplier.isPresent()) {
-                WorldTimerServer timer = new WorldTimerServer(dimension);
-                timer.add(Period.NIGHT, new SleepTimeTicker(multiplier.get().floatValue()));
+                float value = multiplier.get().floatValue();
+                ServerWorldTimer timer = new ServerWorldTimer();
+                timer.add(Period.NIGHT, new SleepTimeTicker(value));
                 timers.put(dimension, timer);
-                System.out.println("#" + dimension);
+                info("Added timer: dim={}, rate={}", dimension.getRegistryName(), value);
             }
         }
     }
 
-    protected void handleMessage(TimeMessage message, Supplier<NetworkEvent.Context> context) {
-        if (context.get().getDirection().getReceptionSide().isClient()) {
-            DimensionType type = DimensionType.getById(message.getDimension());
-            WorldTimer timer = timers.computeIfAbsent(type, constructor);
-            timer.setRate(message.getRate());
-            context.get().setPacketHandled(true);
+    @SubscribeEvent
+    public void onSleep(PlayerSleepInBedEvent event) {
+        if (event.getEntity().world.isRemote) {
+            return;
+        }
+
+        if (timers.containsKey(event.getEntity().world.getDimension().getType())) {
+            trace("Handling player sleep");
+            // bypasses the server.updateAllPlayersSleepingFlag() call
+            event.setResult(PlayerEntity.SleepResult.OTHER_PROBLEM);
+
+            // put the player in the bed
+            event.getEntityLiving().startSleeping(event.getPos());
+        }
+    }
+
+    @SubscribeEvent
+    public void onTick(TickEvent.WorldTickEvent event) {
+        if (event.phase == TickEvent.Phase.START) {
+            WorldTimer timer = timers.get(event.world.getDimension().getType());
+            if (timer != null) {
+                timer.tick(event.world);
+            }
+        }
+    }
+
+    @SubscribeEvent
+    public void onDimChange(PlayerEvent.PlayerChangedDimensionEvent event) {
+        if (event.getPlayer() instanceof ServerPlayerEntity) {
+            trace("Handling player dimension change");
+            ServerPlayerEntity player = (ServerPlayerEntity) event.getPlayer();
+            WorldTimer timer = timers.get(event.getTo());
+            if (timer != null) {
+                trace("Sending time packet: player={}, rate={}", player.getName(), timer.getRate());
+                Channels.send(Channels.TIME, event.getPlayer(), new TimeMessage(timer.getRate()));
+            }
         }
     }
 }

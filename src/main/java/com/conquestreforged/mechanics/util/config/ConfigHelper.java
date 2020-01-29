@@ -1,4 +1,4 @@
-package com.conquestreforged.mechanics.config;
+package com.conquestreforged.mechanics.util.config;
 
 import com.conquestreforged.mechanics.Module;
 import com.google.gson.Gson;
@@ -23,7 +23,7 @@ public class ConfigHelper {
 
         Config config = new Config();
         if (generate) {
-            for (Module module : Module.REGISTRY.values()) {
+            for (Module module : Module.REGISTRY) {
                 module.addDefaults(config);
             }
             save(config, file);

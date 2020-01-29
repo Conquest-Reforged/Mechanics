@@ -1,4 +1,4 @@
-package com.conquestreforged.mechanics.config;
+package com.conquestreforged.mechanics.util.config;
 
 public class ModuleConfig extends ObjectMap {
 

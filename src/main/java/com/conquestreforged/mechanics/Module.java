@@ -1,15 +1,22 @@
 package com.conquestreforged.mechanics;
 
-import com.conquestreforged.mechanics.config.Config;
+import com.conquestreforged.mechanics.util.Loggable;
+import com.conquestreforged.mechanics.util.config.Config;
+import org.apache.logging.log4j.Marker;
+import org.apache.logging.log4j.MarkerManager;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.LinkedList;
+import java.util.List;
 
-public interface Module {
+public interface Module extends Loggable {
 
-    Map<String, Module> REGISTRY = new HashMap<>();
+    Marker MARKER = MarkerManager.getMarker("Module");
 
-    void init();
+    List<Module> REGISTRY = new LinkedList<>();
+
+    String getName();
+
+    void unload();
 
     void load(Config config);
 

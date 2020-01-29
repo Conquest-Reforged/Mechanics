@@ -1,4 +1,4 @@
-package com.conquestreforged.mechanics.config;
+package com.conquestreforged.mechanics.util.config;
 
 import java.util.LinkedHashMap;
 import java.util.Optional;
