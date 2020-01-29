@@ -1,8 +1,7 @@
 package com.conquestreforged.mechanics.time.timer;
 
-import com.conquestreforged.mechanics.time.Period;
 import com.conquestreforged.mechanics.time.TimeMessage;
-import com.conquestreforged.mechanics.time.ticker.TimeTicker;
+import com.conquestreforged.mechanics.time.timer.ticker.TimeTicker;
 import com.conquestreforged.mechanics.util.Channels;
 import com.conquestreforged.mechanics.util.Loggable;
 import net.minecraft.world.IWorld;

@@ -1,8 +1,8 @@
 package com.conquestreforged.mechanics.time;
 
-import com.conquestreforged.mechanics.util.Log;
-import com.conquestreforged.mechanics.util.Channels;
 import com.conquestreforged.mechanics.time.timer.WorldTimer;
+import com.conquestreforged.mechanics.util.Channels;
+import com.conquestreforged.mechanics.util.Log;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.screen.SleepInMultiplayerScreen;

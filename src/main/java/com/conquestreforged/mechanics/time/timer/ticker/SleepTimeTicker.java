@@ -1,4 +1,4 @@
-package com.conquestreforged.mechanics.time.ticker;
+package com.conquestreforged.mechanics.time.timer.ticker;
 
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.world.IWorld;

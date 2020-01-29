@@ -1,9 +1,10 @@
 package com.conquestreforged.mechanics.time;
 
 import com.conquestreforged.mechanics.Module;
-import com.conquestreforged.mechanics.time.ticker.SleepTimeTicker;
+import com.conquestreforged.mechanics.time.timer.Period;
 import com.conquestreforged.mechanics.time.timer.ServerWorldTimer;
 import com.conquestreforged.mechanics.time.timer.WorldTimer;
+import com.conquestreforged.mechanics.time.timer.ticker.SleepTimeTicker;
 import com.conquestreforged.mechanics.util.Channels;
 import com.conquestreforged.mechanics.util.config.Config;
 import net.minecraft.entity.player.PlayerEntity;

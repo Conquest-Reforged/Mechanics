@@ -1,9 +1,9 @@
 package com.conquestreforged.mechanics;
 
+import com.conquestreforged.mechanics.time.TimeModule;
 import com.conquestreforged.mechanics.util.Log;
 import com.conquestreforged.mechanics.util.config.Config;
 import com.conquestreforged.mechanics.util.config.ConfigHelper;
-import com.conquestreforged.mechanics.time.TimeModule;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
