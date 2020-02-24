@@ -12,7 +12,7 @@ buildscript {
 apply plugin: "net.minecraftforge.gradle"
 apply plugin: "eclipse"
 
-version = "${mod_version}-mc${mc_version}"
+version = "${mod_version}-mc${mc_version}${getClassifier()}"
 
 repositories {
     jcenter()
@@ -58,4 +58,16 @@ processResources {
                 "mc_version": mc_version
         )
     }
+}
+
+static def getClassifier() {
+    def tag = System.getenv("GIT_TAG_NAME")
+    if (tag != null) {
+        return "-${tag}"
+    }
+    def buildNumber = System.getenv("BUILD_NUMBER")
+    if (buildNumber == null) {
+        return "-${buildNumber}"
+    }
+    return ""
 }
