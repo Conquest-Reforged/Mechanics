@@ -1,11 +1,8 @@
 package com.conquestreforged.mechanics.time;
 
-import com.conquestreforged.mechanics.util.Channels;
 import net.minecraft.network.PacketBuffer;
 
 public class TimeMessage {
-
-    public static final int ID = Channels.nextMessageId();
 
     private final float rate;
 

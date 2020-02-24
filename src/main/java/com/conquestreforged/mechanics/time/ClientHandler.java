@@ -1,8 +1,8 @@
 package com.conquestreforged.mechanics.time;
 
 import com.conquestreforged.mechanics.time.timer.WorldTimer;
-import com.conquestreforged.mechanics.util.Channels;
 import com.conquestreforged.mechanics.util.Log;
+import com.conquestreforged.mechanics.util.net.Channels;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.client.gui.screen.SleepInMultiplayerScreen;
@@ -17,8 +17,6 @@ import net.minecraftforge.fml.network.NetworkEvent;
 import org.apache.logging.log4j.Marker;
 import org.apache.logging.log4j.MarkerManager;
 
-import java.util.function.Supplier;
-
 @Mod.EventBusSubscriber(value = Dist.CLIENT, bus = Mod.EventBusSubscriber.Bus.MOD)
 public class ClientHandler {
 
@@ -29,21 +27,13 @@ public class ClientHandler {
     public static void setup(FMLClientSetupEvent event) {
         Log.info(MARKER, "Setting up client");
 
-        Channels.TIME.registerMessage(
-                TimeMessage.ID,
-                TimeMessage.class,
-                TimeMessage::encode,
-                TimeMessage::decode,
-                ClientHandler::handleMessage
-        );
-
+        Channels.TIME.register(TimeMessage.class, TimeMessage::encode, TimeMessage::decode, ClientHandler::handleMessage);
         MinecraftForge.EVENT_BUS.addListener(ClientHandler::tick);
     }
 
-    private static void handleMessage(TimeMessage message, Supplier<NetworkEvent.Context> context) {
-        if (context.get().getDirection().getReceptionSide().isClient()) {
+    private static void handleMessage(TimeMessage message, NetworkEvent.Context context) {
+        if (context.getDirection().getReceptionSide().isClient()) {
             timer.setRate(message.getRate());
-            context.get().setPacketHandled(true);
             Log.trace(MARKER, "Received packet: rate={}", message.getRate());
         }
     }
@@ -63,6 +53,8 @@ public class ClientHandler {
             return;
         }
 
-        timer.tick(player.world);
+        if (timer.canTick(player.world)) {
+            timer.tick(player.world);
+        }
     }
 }

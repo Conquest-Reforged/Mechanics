@@ -1,8 +1,9 @@
 package com.conquestreforged.mechanics.util.config;
 
+import com.conquestreforged.mechanics.Config;
 import com.conquestreforged.mechanics.Module;
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
+import com.google.gson.*;
+import com.mojang.datafixers.kinds.Const;
 
 import java.io.*;
 
@@ -11,23 +12,35 @@ public class ConfigHelper {
     private static final Gson gson = new GsonBuilder().setPrettyPrinting().create();
 
     public static Config load(File file) {
-        boolean generate = true;
         if (file.exists()) {
             try (Reader reader = new BufferedReader(new FileReader(file))) {
-                return gson.fromJson(reader, Config.class);
+                JsonElement element = new JsonParser().parse(reader);
+                if (element.isJsonObject()) {
+                    JsonObject object = element.getAsJsonObject();
+                    Config config = gson.fromJson(object, Config.class);
+                    boolean save = false;
+                    for (Module module : Module.REGISTRY) {
+                        if (!object.has(module.getName())) {
+                            save = true;
+                            module.addDefaults(config);
+                        }
+                    }
+                    if (save) {
+                        save(config, file);
+                    }
+                    return config;
+                }
             } catch (IOException e) {
                 e.printStackTrace();
-                generate = false;
             }
         }
 
         Config config = new Config();
-        if (generate) {
-            for (Module module : Module.REGISTRY) {
-                module.addDefaults(config);
-            }
-            save(config, file);
+        for (Module module : Module.REGISTRY) {
+            module.addDefaults(config);
         }
+        save(config, file);
+
         return config;
     }
 

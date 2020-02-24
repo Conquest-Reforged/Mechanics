@@ -2,7 +2,7 @@ package com.conquestreforged.mechanics.time.timer;
 
 import com.conquestreforged.mechanics.time.TimeMessage;
 import com.conquestreforged.mechanics.time.timer.ticker.TimeTicker;
-import com.conquestreforged.mechanics.util.Channels;
+import com.conquestreforged.mechanics.util.net.Channels;
 import com.conquestreforged.mechanics.util.Loggable;
 import net.minecraft.world.IWorld;
 import org.apache.logging.log4j.Marker;
@@ -50,7 +50,7 @@ public class ServerWorldTimer extends WorldTimer implements Loggable {
     public void updateRate(IWorld world, float rate) {
         if (rate != getRate()) {
             super.setRate(rate);
-            Channels.send(Channels.TIME, world.getDimension(), new TimeMessage(getRate()));
+            Channels.TIME.send(world, new TimeMessage(getRate()));
             trace("Sending time packet: dim={}, rate={}", world.getDimension().getType(), getRate());
         }
     }

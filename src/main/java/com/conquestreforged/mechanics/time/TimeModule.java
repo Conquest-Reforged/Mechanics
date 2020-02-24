@@ -5,14 +5,15 @@ import com.conquestreforged.mechanics.time.timer.Period;
 import com.conquestreforged.mechanics.time.timer.ServerWorldTimer;
 import com.conquestreforged.mechanics.time.timer.WorldTimer;
 import com.conquestreforged.mechanics.time.timer.ticker.SleepTimeTicker;
-import com.conquestreforged.mechanics.util.Channels;
-import com.conquestreforged.mechanics.util.config.Config;
+import com.conquestreforged.mechanics.util.net.Channels;
+import com.conquestreforged.mechanics.Config;
 import net.minecraft.entity.player.PlayerEntity;
 import net.minecraft.entity.player.ServerPlayerEntity;
 import net.minecraft.world.dimension.DimensionType;
 import net.minecraftforge.event.TickEvent;
 import net.minecraftforge.event.entity.player.PlayerEvent;
 import net.minecraftforge.event.entity.player.PlayerSleepInBedEvent;
+import net.minecraftforge.eventbus.api.EventPriority;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import org.apache.logging.log4j.Marker;
 import org.apache.logging.log4j.MarkerManager;
@@ -70,9 +71,13 @@ public class TimeModule implements Module {
         }
     }
 
-    @SubscribeEvent
+    @SubscribeEvent(priority = EventPriority.LOWEST)
     public void onSleep(PlayerSleepInBedEvent event) {
         if (event.getEntity().world.isRemote) {
+            return;
+        }
+
+        if (event.getResultStatus() != null) {
             return;
         }
 
@@ -90,7 +95,7 @@ public class TimeModule implements Module {
     public void onTick(TickEvent.WorldTickEvent event) {
         if (event.phase == TickEvent.Phase.START) {
             WorldTimer timer = timers.get(event.world.getDimension().getType());
-            if (timer != null) {
+            if (timer != null && timer.canTick(event.world)) {
                 timer.tick(event.world);
             }
         }
@@ -100,11 +105,10 @@ public class TimeModule implements Module {
     public void onDimChange(PlayerEvent.PlayerChangedDimensionEvent event) {
         if (event.getPlayer() instanceof ServerPlayerEntity) {
             trace("Handling player dimension change");
-            ServerPlayerEntity player = (ServerPlayerEntity) event.getPlayer();
             WorldTimer timer = timers.get(event.getTo());
             if (timer != null) {
-                trace("Sending time packet: player={}, rate={}", player.getName(), timer.getRate());
-                Channels.send(Channels.TIME, event.getPlayer(), new TimeMessage(timer.getRate()));
+                trace("Sending time packet: player={}, rate={}", event.getPlayer().getName(), timer.getRate());
+                Channels.TIME.send(event.getPlayer(), new TimeMessage(timer.getRate()));
             }
         }
     }

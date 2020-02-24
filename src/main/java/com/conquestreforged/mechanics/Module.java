@@ -1,7 +1,6 @@
 package com.conquestreforged.mechanics;
 
 import com.conquestreforged.mechanics.util.Loggable;
-import com.conquestreforged.mechanics.util.config.Config;
 import org.apache.logging.log4j.Marker;
 import org.apache.logging.log4j.MarkerManager;
 

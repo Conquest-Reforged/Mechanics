@@ -5,14 +5,14 @@ buildscript {
         maven { url "https://files.minecraftforge.net/maven" }
     }
     dependencies {
-        classpath group: "net.minecraftforge.gradle", name: "ForgeGradle", version: "3.+", changing: true
+        classpath group: "net.minecraftforge.gradle", name: "ForgeGradle", version: "3.0.159", changing: true
     }
 }
 
 apply plugin: "net.minecraftforge.gradle"
 apply plugin: "eclipse"
 
-version = "${version}-mc${mc_version}"
+version = "${mod_version}-mc${mc_version}"
 
 repositories {
     jcenter()
@@ -58,13 +58,4 @@ processResources {
                 "mc_version": mc_version
         )
     }
-}
-
-task deobfJar(type: Jar) {
-    from sourceSets.main.output
-    classifier = "deobf"
-}
-
-jar {
-    dependsOn(deobfJar)
 }

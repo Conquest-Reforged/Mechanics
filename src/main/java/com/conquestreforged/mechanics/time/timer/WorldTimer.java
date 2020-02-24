@@ -1,5 +1,6 @@
 package com.conquestreforged.mechanics.time.timer;
 
+import net.minecraft.world.GameRules;
 import net.minecraft.world.IWorld;
 
 public class WorldTimer {
@@ -12,11 +13,12 @@ public class WorldTimer {
 
     public void tick(IWorld world) {
         long ticks = world.getWorldInfo().getDayTime();
-        if (ticks != lastTimeTicks) {
+        if (Math.abs(ticks - lastTimeTicks) > 1L) {
             setTime(ticks);
         } else {
             setTime(getTime() + getRate());
         }
+
         world.getWorldInfo().setDayTime(lastTimeTicks - 1);
     }
 
@@ -30,6 +32,10 @@ public class WorldTimer {
 
     public void setRate(float rate) {
         this.rate = rate;
+    }
+
+    public boolean canTick(IWorld world) {
+        return world.getWorldInfo().getGameRulesInstance().get(GameRules.DO_DAYLIGHT_CYCLE).get();
     }
 
     private void setTime(float time) {
